@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Development Quiz</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(45deg, #4CAF50, #45a049);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+    }
+
+    .progress-container {
+      background: rgba(255,255,255,0.2);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 20px;
+    }
+
+    .progress-bar {
+      height: 10px;
+      background: #fff;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .quiz-content {
+      padding: 40px;
+    }
+
+    .question-container {
+      display: none;
+      animation: fadeIn 0.5s ease-in;
+    }
+
+    .question-container.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .question-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #eee;
+    }
+
+    .question-number {
+      background: #667eea;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 25px;
+      font-weight: bold;
+    }
+
+    .question-type {
+      background: #ff6b6b;
+      color: white;
+      padding: 5px 15px;
+      border-radius: 15px;
+      font-size: 0.9em;
+    }
+
+    .question-text {
+      font-size: 1.3em;
+      margin-bottom: 25px;
+      line-height: 1.6;
+      color: #333;
+    }
+
+    .options {
+      margin-bottom: 25px;
+    }
+
+    .option {
+      background: #f8f9fa;
+      margin: 10px 0;
+      padding: 15px;
+      border-radius: 10px;
+      border: 2px solid #e9ecef;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+    }
+
+    .option:hover {
+      background: #e3f2fd;
+      border-color: #2196f3;
+    }
+
+    .option.selected {
+      background: #e8f5e8;
+      border-color: #4CAF50;
+    }
+
+    .option input {
+      margin-right: 15px;
+      transform: scale(1.2);
+    }
+
+    .text-input, .code-input {
+      width: 100%;
+      padding: 15px;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      font-size: 1.1em;
+      font-family: inherit;
+      transition: border-color 0.3s ease;
+    }
+
+    .code-input {
+      font-family: 'Courier New', monospace;
+      background: #f8f8f8;
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .text-input:focus, .code-input:focus {
+      outline: none;
+      border-color: #4CAF50;
+      box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+    }
+
+    .button-container {
+      display: flex;
+      gap: 15px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .answer-button {
+      background: linear-gradient(45deg, #4CAF50, #45a049);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 25px;
+      font-size: 1.1em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .answer-button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+    }
+
+    .answer-button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .nav-button {
+      background: linear-gradient(45deg, #2196f3, #1976d2);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 25px;
+      font-size: 1.1em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .nav-button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4);
+    }
+
+    .nav-button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .prev-button {
+      background: linear-gradient(45deg, #ff9800, #f57c00);
+    }
+
+    .prev-button:hover:not(:disabled) {
+      box-shadow: 0 5px 15px rgba(255, 152, 0, 0.4);
+    }
+
+    .explanation {
+      display: none;
+      margin-top: 25px;
+      padding: 20px;
+      border-radius: 10px;
+      border-left: 5px solid #4CAF50;
+      animation: slideDown 0.5s ease;
+    }
+
+    .explanation.correct {
+      background: #e8f5e8;
+      border-color: #4CAF50;
+    }
+
+    .explanation.incorrect {
+      background: #fdeaea;
+      border-color: #f44336;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; max-height: 0; }
+      to { opacity: 1; max-height: 200px; }
+    }
+
+    .results {
+      display: none;
+      text-align: center;
+      padding: 40px;
+    }
+
+    .score {
+      font-size: 4em;
+      font-weight: bold;
+      color: #4CAF50;
+      margin-bottom: 20px;
+    }
+
+    .score-text {
+      font-size: 1.5em;
+      margin-bottom: 30px;
+      color: #333;
+    }
+
+    .restart-button {
+      background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+      color: white;
+      border: none;
+      padding: 20px 40px;
+      border-radius: 30px;
+      font-size: 1.2em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .restart-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+    }
+
+    .score-details {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 30px;
+      text-align: left;
+    }
+
+    .type-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.8em;
+      margin-left: 10px;
+      color: white;
+    }
+
+    .type-multiple { background: #2196f3; }
+    .type-checkbox { background: #ff9800; }
+    .type-text { background: #9c27b0; }
+    .type-code { background: #795548; }
+    .type-boolean { background: #607d8b; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>🚀 Web Development Quiz</h1>
+    <p>Teszteld a tudásod 70 kérdéssel!</p>
+    <div class="progress-container">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+  </div>
+
+  <div class="quiz-content" id="quizContent">
+    <!-- Quiz questions will be generated here -->
+  </div>
+
+  <div class="results" id="results">
+    <div class="score" id="finalScore">0%</div>
+    <div class="score-text" id="scoreText"></div>
+    <div class="score-details" id="scoreDetails"></div>
+    <button class="restart-button" onclick="restartQuiz()">🔄 Újrakezdés</button>
+  </div>
+</div>
+
+<script src="kerdesek.js"></script>
+<script>
+  let currentQuestion = 0;
+  let score = 0;
+  let userAnswers = [];
+  let isAnswered = false;
+
+  function getTypeLabel(type) {
+    const types = {
+      'multiple': 'Egy helyes válasz',
+      'checkbox': 'Több helyes válasz',
+      'text': 'Szöveges válasz',
+      'code': 'Kód írása',
+      'boolean': 'Igaz/Hamis'
+    };
+    return types[type] || type;
+  }
+
+  function getTypeBadgeClass(type) {
+    return `type-${type}`;
+  }
+
+  function generateQuestionHTML(question, index) {
+    // Safety check
+    if (!question) {
+      return `<div class="question-container">Hiba: Kérdés #${index + 1} nem található</div>`;
+    }
+
+    const typeLabel = getTypeLabel(question.type);
+    const typeBadgeClass = getTypeBadgeClass(question.type);
+
+    let optionsHTML = '';
+
+    try {
+      switch(question.type) {
+        case 'multiple':
+          if (!question.options || !Array.isArray(question.options)) {
+            throw new Error('Hiányzó vagy hibás opciólisták');
+          }
+          optionsHTML = question.options.map((option, i) =>
+            `<div class="option" onclick="selectOption(${index}, ${i})" id="option_${index}_${i}">
+            <input type="radio" name="q${index}" value="${i}" id="q${index}_${i}">
+            <label for="q${index}_${i}">${option}</label>
+          </div>`
+          ).join('');
+          break;
+
+        case 'checkbox':
+          if (!question.options || !Array.isArray(question.options)) {
+            throw new Error('Hiányzó vagy hibás opciólisták');
+          }
+          optionsHTML = question.options.map((option, i) =>
+            `<div class="option" onclick="toggleCheckbox(${index}, ${i})" id="option_${index}_${i}">
+            <input type="checkbox" name="q${index}" value="${i}" id="q${index}_${i}">
+            <label for="q${index}_${i}">${option}</label>
+          </div>`
+          ).join('');
+          break;
+
+        case 'boolean':
+          optionsHTML = `
+          <div class="option" onclick="selectOption(${index}, true)" id="option_${index}_true">
+            <input type="radio" name="q${index}" value="true" id="q${index}_true">
+            <label for="q${index}_true">Igaz</label>
+          </div>
+          <div class="option" onclick="selectOption(${index}, false)" id="option_${index}_false">
+            <input type="radio" name="q${index}" value="false" id="q${index}_false">
+            <label for="q${index}_false">Hamis</label>
+          </div>
+        `;
+          break;
+
+        case 'text':
+          optionsHTML = `<input type="text" class="text-input" id="textInput${index}" placeholder="Írd be a válaszodat...">`;
+          break;
+
+        case 'code':
+          optionsHTML = `<textarea class="code-input" id="codeInput${index}" placeholder="${question.placeholder || 'Írd be a kódot...'}">${question.placeholder || ''}</textarea>`;
+          break;
+
+        default:
+          throw new Error(`Ismeretlen kérdéstípus: ${question.type}`);
+      }
+    } catch (error) {
+      console.error(`Hiba a kérdés generálásában (${index + 1}):`, error);
+      optionsHTML = `<div style="color: #f44336; padding: 20px;">Hiba a kérdés betöltésében: ${error.message}</div>`;
+    }
+
+    const totalQuestions = (typeof questions !== 'undefined' && questions.length) ? questions.length : 70;
+
+    return `
+    <div class="question-container" id="question${index}">
+      <div class="question-header">
+        <span class="question-number">${index + 1}/${totalQuestions}</span>
+        <span class="question-type ${typeBadgeClass}">${typeLabel}</span>
+      </div>
+      <div class="question-text">${question.question || 'Kérdés nem található'}</div>
+      <div class="options">
+        ${optionsHTML}
+      </div>
+      <div class="explanation" id="explanation${index}">
+        <strong>Magyarázat:</strong><br>
+        ${question.explanation || 'Magyarázat nem elérhető'}
+      </div>
+      <div class="button-container">
+        <button class="answer-button" onclick="submitAnswer(${index})" id="submitBtn${index}">Válasz elküldése</button>
+        <button class="nav-button prev-button" onclick="prevQuestion()" id="prevBtn${index}" ${index === 0 ? 'disabled' : ''}>← Előző</button>
+        <button class="nav-button" onclick="nextQuestion()" id="nextBtn${index}" ${index === totalQuestions - 1 ? 'style="display:none"' : ''}>Következő →</button>
+        <button class="nav-button" onclick="showResults()" id="finishBtn${index}" ${index === totalQuestions - 1 ? '' : 'style="display:none"'}>Befejezés</button>
+      </div>
+    </div>
+  `;
+  }
+
+  function initQuiz() {
+    // Check if questions are loaded
+    if (typeof questions === 'undefined' || !questions || questions.length === 0) {
+      document.getElementById('quizContent').innerHTML = `
+      <div style="text-align: center; padding: 40px; color: #f44336;">
+        <h2>❌ Hiba történt</h2>
+        <p>A kérdések nem töltődtek be. Kérlek ellenőrizd, hogy a kerdesek.js fájl megfelelően van-e betöltve!</p>
+        <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">🔄 Oldal újratöltése</button>
+      </div>
+    `;
+      return;
+    }
+
+    try {
+      const quizContent = document.getElementById('quizContent');
+      quizContent.innerHTML = questions.map((q, i) => generateQuestionHTML(q, i)).join('');
+      showQuestion(0);
+      updateProgress();
+    } catch (error) {
+      console.error('Hiba a quiz inicializálásában:', error);
+      document.getElementById('quizContent').innerHTML = `
+      <div style="text-align: center; padding: 40px; color: #f44336;">
+        <h2>❌ Hiba történt</h2>
+        <p>A quiz nem tudott betöltődni. Hiba: ${error.message}</p>
+        <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">🔄 Oldal újratöltése</button>
+      </div>
+    `;
+    }
+  }
+
+  function showQuestion(index) {
+    document.querySelectorAll('.question-container').forEach(q => q.classList.remove('active'));
+    document.getElementById(`question${index}`).classList.add('active');
+    currentQuestion = index;
+    updateProgress();
+  }
+
+  function selectOption(questionIndex, optionValue) {
+    if (isAnswered && questionIndex === currentQuestion) return;
+
+    const question = questions[questionIndex];
+
+    // Clear previous selections visually
+    document.querySelectorAll(`#question${questionIndex} .option`).forEach(opt => {
+      opt.classList.remove('selected');
+    });
+
+    if (question.type === 'boolean') {
+      userAnswers[questionIndex] = optionValue;
+      const optionElement = document.getElementById(`option_${questionIndex}_${optionValue}`);
+      optionElement.classList.add('selected');
+
+      // Update radio button
+      document.getElementById(`q${questionIndex}_${optionValue}`).checked = true;
+    } else if (question.type === 'multiple') {
+      userAnswers[questionIndex] = optionValue;
+      const optionElement = document.getElementById(`option_${questionIndex}_${optionValue}`);
+      optionElement.classList.add('selected');
+
+      // Update radio button
+      document.getElementById(`q${questionIndex}_${optionValue}`).checked = true;
+    }
+  }
+
+  function toggleCheckbox(questionIndex, optionIndex) {
+    if (isAnswered && questionIndex === currentQuestion) return;
+
+    if (!userAnswers[questionIndex]) {
+      userAnswers[questionIndex] = [];
+    }
+
+    const checkbox = document.getElementById(`q${questionIndex}_${optionIndex}`);
+    const optionElement = document.getElementById(`option_${questionIndex}_${optionIndex}`);
+
+    checkbox.checked = !checkbox.checked;
+
+    if (checkbox.checked) {
+      if (!userAnswers[questionIndex].includes(optionIndex)) {
+        userAnswers[questionIndex].push(optionIndex);
+      }
+      optionElement.classList.add('selected');
+    } else {
+      userAnswers[questionIndex] = userAnswers[questionIndex].filter(i => i !== optionIndex);
+      optionElement.classList.remove('selected');
+    }
+  }
+
+  function submitAnswer(questionIndex) {
+    const question = questions[questionIndex];
+    let userAnswer;
+    let isCorrect = false;
+
+    switch(question.type) {
+      case 'multiple':
+        userAnswer = userAnswers[questionIndex];
+        isCorrect = userAnswer === question.correct;
+        break;
+
+      case 'checkbox':
+        userAnswer = userAnswers[questionIndex] || [];
+        userAnswer.sort();
+        const correctSorted = [...question.correct].sort();
+        isCorrect = JSON.stringify(userAnswer) === JSON.stringify(correctSorted);
+        break;
+
+      case 'boolean':
+        userAnswer = userAnswers[questionIndex];
+        isCorrect = userAnswer === question.correct;
+        break;
+
+      case 'text':
+      case 'code':
+        const inputId = question.type === 'text' ? `textInput${questionIndex}` : `codeInput${questionIndex}`;
+        userAnswer = document.getElementById(inputId).value.toLowerCase().trim();
+        userAnswers[questionIndex] = userAnswer;
+
+        if (Array.isArray(question.correct)) {
+          isCorrect = question.correct.some(correct =>
+            userAnswer.includes(correct.toLowerCase())
+          );
+        } else {
+          isCorrect = userAnswer.includes(question.correct.toLowerCase());
+        }
+        break;
+    }
+
+    if (isCorrect) {
+      score++;
+    }
+
+    showExplanation(questionIndex, isCorrect);
+
+    if (questionIndex === currentQuestion) {
+      isAnswered = true;
+    }
+
+    // Disable submit button
+    document.getElementById(`submitBtn${questionIndex}`).disabled = true;
+    document.getElementById(`submitBtn${questionIndex}`).textContent = 'Válasz elküldve';
+  }
+
+  function showExplanation(questionIndex, isCorrect) {
+    const explanation = document.getElementById(`explanation${questionIndex}`);
+    explanation.style.display = 'block';
+    explanation.className = `explanation ${isCorrect ? 'correct' : 'incorrect'}`;
+
+    const resultText = isCorrect ?
+      '<strong style="color: #4CAF50;">✅ Helyes válasz!</strong><br>' :
+      '<strong style="color: #f44336;">❌ Helytelen válasz!</strong><br>';
+
+    explanation.innerHTML = resultText + '<strong>Magyarázat:</strong><br>' + questions[questionIndex].explanation;
+  }
+
+  function nextQuestion() {
+    if (currentQuestion < questions.length - 1) {
+      isAnswered = false;
+      showQuestion(currentQuestion + 1);
+    }
+  }
+
+  function prevQuestion() {
+    if (currentQuestion > 0) {
+      isAnswered = false;
+      showQuestion(currentQuestion - 1);
+    }
+  }
+
+  function updateProgress() {
+    const progress = ((currentQuestion + 1) / questions.length) * 100;
+    document.getElementById('progressBar').style.width = `${progress}%`;
+  }
+
+  function showResults() {
+    document.getElementById('quizContent').style.display = 'none';
+    document.getElementById('results').style.display = 'block';
+
+    const percentage = Math.round((score / questions.length) * 100);
+    document.getElementById('finalScore').textContent = `${percentage}%`;
+
+    let scoreMessage = '';
+    if (percentage >= 90) {
+      scoreMessage = '🏆 Kiváló! Mester szintű tudás!';
+    } else if (percentage >= 80) {
+      scoreMessage = '🎉 Nagyon jó! Szinte minden stimmel!';
+    } else if (percentage >= 70) {
+      scoreMessage = '👍 Jó! Van mit fejleszteni, de jó alapok!';
+    } else if (percentage >= 50) {
+      scoreMessage = '📚 Átlagos. Érdemes még tanulni!';
+    } else {
+      scoreMessage = '💪 Kezdő szint. Ne add fel, gyakorolj tovább!';
+    }
+
+    document.getElementById('scoreText').textContent = `${score}/${questions.length} helyes válasz - ${scoreMessage}`;
+
+    // Score details by type
+    const typeStats = {};
+    questions.forEach((q, i) => {
+      if (!typeStats[q.type]) {
+        typeStats[q.type] = { correct: 0, total: 0 };
+      }
+      typeStats[q.type].total++;
+
+      // Check if answer was correct
+      let wasCorrect = false;
+      switch(q.type) {
+        case 'multiple':
+          wasCorrect = userAnswers[i] === q.correct;
+          break;
+        case 'boolean':
+          wasCorrect = userAnswers[i] === q.correct;
+          break;
+        case 'checkbox':
+          const userAnswer = userAnswers[i] || [];
+          wasCorrect = JSON.stringify([...userAnswer].sort()) === JSON.stringify([...q.correct].sort());
+          break;
+        case 'text':
+        case 'code':
+          const answer = userAnswers[i] || '';
+          if (Array.isArray(q.correct)) {
+            wasCorrect = q.correct.some(correct => answer.includes(correct.toLowerCase()));
+          } else {
+            wasCorrect = answer.includes(q.correct.toLowerCase());
+          }
+          break;
+      }
+
+      if (wasCorrect) {
+        typeStats[q.type].correct++;
+      }
+    });
+
+    let detailsHTML = '<h3>Eredmények típusonként:</h3>';
+    Object.keys(typeStats).forEach(type => {
+      const stat = typeStats[type];
+      const typePercentage = Math.round((stat.correct / stat.total) * 100);
+      const typeLabel = getTypeLabel(type);
+      const badgeClass = getTypeBadgeClass(type);
+
+      detailsHTML += `
+      <div style="margin: 10px 0; padding: 10px; background: white; border-radius: 5px;">
+        <span class="type-badge ${badgeClass}">${typeLabel}</span>
+        <span style="float: right; font-weight: bold;">${stat.correct}/${stat.total} (${typePercentage}%)</span>
+      </div>
+    `;
+    });
+
+    document.getElementById('scoreDetails').innerHTML = detailsHTML;
+  }
+
+  function restartQuiz() {
+    currentQuestion = 0;
+    score = 0;
+    userAnswers = [];
+    isAnswered = false;
+
+    document.getElementById('quizContent').style.display = 'block';
+    document.getElementById('results').style.display = 'none';
+
+    // Reset all form elements
+    document.querySelectorAll('input[type="radio"], input[type="checkbox"]').forEach(input => {
+      input.checked = false;
+    });
+    document.querySelectorAll('.text-input, .code-input').forEach(input => {
+      input.value = '';
+    });
+    document.querySelectorAll('.explanation').forEach(exp => {
+      exp.style.display = 'none';
+    });
+    document.querySelectorAll('.answer-button').forEach(btn => {
+      btn.disabled = false;
+      btn.textContent = 'Válasz elküldése';
+    });
+    document.querySelectorAll('.option').forEach(opt => {
+      opt.classList.remove('selected');
+    });
+
+    showQuestion(0);
+    updateProgress();
+  }
+
+  // Initialize quiz when page loads - with better error handling
+  document.addEventListener('DOMContentLoaded', function() {
+    // Wait a bit for kerdesek.js to load
+    setTimeout(function() {
+      initQuiz();
+    }, 100);
+  });
+
+  // Also try to initialize when the window loads (fallback)
+  window.addEventListener('load', function() {
+    if (document.getElementById('quizContent').innerHTML.trim() === '') {
+      initQuiz();
+    }
+  });
+</script>
+</body>
+</html>
